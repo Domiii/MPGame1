@@ -6,6 +6,7 @@ public class Player : Photon.MonoBehaviour {
 	void Awake () {
 		if (photonView.isMine) {
 			AddLocalComponent<LocalPlayerControls> ("StartLocalPlayer");
+			var material = GameObject.Find ("Ground").GetComponent<MeshRenderer> ().material;
 		}
 	}
 
