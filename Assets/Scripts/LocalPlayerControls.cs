@@ -7,7 +7,7 @@ using UnityEngine;
 /// </summary>
 [RequireComponent(typeof(ClickToShoot2D))]
 public class LocalPlayerControls : MonoBehaviour {
-	public float speed = 5;
+	public float speed = 0.2f;
 
 	public void StartLocalPlayer() {
 		InitMainCamera ();
@@ -28,6 +28,6 @@ public class LocalPlayerControls : MonoBehaviour {
 		move.y = Input.GetAxisRaw ("Vertical");
 		move.Normalize ();
 
-		transform.Translate (move);
+		transform.Translate (move * speed);
 	}
 }
