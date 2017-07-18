@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using UnityEngine.AI;
+using System.Collections;
 
 /// <summary>
 /// Shooter is used by other components to shoot stuff.
@@ -10,7 +11,7 @@ public class Shooter2D : MonoBehaviour {
 	public float turnSpeed = 1000.0f;
 	public Transform shootTransform;
 
-	Vector3 currentTarget;
+	Vector2 currentTarget;
 	float lastShotTime = -10000;
 	bool isAttacking;
 
@@ -20,7 +21,7 @@ public class Shooter2D : MonoBehaviour {
 		}
 	}
 
-	public void StartShootingAt (Vector3 target) {
+	public void StartShootingAt (Vector2 target) {
 		currentTarget = target;
 		isAttacking = true;
 	}
@@ -34,28 +35,27 @@ public class Shooter2D : MonoBehaviour {
 		ShootAt (t.position);
 	}
 
-	public void ShootAt (Vector3 target) {
+	public void ShootAt (Vector2 target) {
 		if (weapon == null || weapon.bulletPrefab == null) {
 			return;
 		}
 
+		var angle = GetAngleToward(target);
+		print (angle);
 		if (weapon.bulletCount > 1) {
 			// shoot N bullets in a cone from -coneAngle/2 to +coneAngle/2
-			var dir = target - transform.position;
-			dir.Normalize ();
-			dir = Quaternion.Euler (0, -weapon.ConeAngle / 2, 0) * dir;
-
-			var deltaAngle = weapon.ConeAngle / (weapon.bulletCount - 1);
+			angle -= weapon.coneAngle/2;
+			var deltaAngle = weapon.coneAngle / (weapon.bulletCount - 1);
 
 			for (var i = 0; i < weapon.bulletCount; ++i) {
 				//dir.Normalize ();
-				ShootBullet (dir);
-				dir = Quaternion.Euler (0, deltaAngle, 0) * dir;
+				ShootBullet (angle);
+				angle += deltaAngle;
 
 			}
 		} else {
 			// just one bullet straight forward
-			ShootBullet (shootTransform.forward);
+			ShootBullet (angle);
 		}
 
 		// reset shoot time
@@ -81,11 +81,11 @@ public class Shooter2D : MonoBehaviour {
 	void Update () {
 		if (isAttacking) {
 			// some debug stuff
-			var dir = currentTarget - transform.position;
+			var dir = currentTarget - (Vector2)transform.position;
 			Debug.DrawRay (transform.position, dir);
 
 			// rotate toward target
-			RotateTowardTarget ();
+			//RotateTowardTarget ();
 
 			// keep shooting
 			var delay = Time.time - lastShotTime;
@@ -97,19 +97,22 @@ public class Shooter2D : MonoBehaviour {
 		}
 	}
 
-	Quaternion GetRotationToward (Vector3 target) {
-		Vector3 dir = target - shootTransform.position;
-		return GetRotationFromDirection (dir);
+	float GetAngleToward (Vector2 target) {
+		var dir = target - (Vector2)shootTransform.position;
+		return GetAngleFromDirection (dir);
 	}
 
-	Quaternion GetRotationFromDirection (Vector3 dir) {
-		var angle = Mathf.Atan2 (dir.x, dir.z) * Mathf.Rad2Deg;
-		return Quaternion.AngleAxis (angle, Vector2.up);
+	float GetAngleFromDirection (Vector2 dir) {
+		return Vector2.SignedAngle(Vector2.right, dir);
+	}
+
+	Quaternion GetRotationFromAngle(float targetAngle) {
+		return Quaternion.AngleAxis (targetAngle, Vector3.back);
 	}
 
 	void RotateTowardTarget () {
-		var rigidbody = GetComponent<Rigidbody> ();
-		if (rigidbody != null && (rigidbody.constraints & RigidbodyConstraints.FreezePositionY) != 0) {
+		var rigidbody = GetComponent<Rigidbody2D> ();
+		if (rigidbody != null && (rigidbody.constraints & RigidbodyConstraints2D.FreezePositionY) != 0) {
 			// don't rotate if rotation has been constrained
 			return;
 		}
@@ -118,25 +121,38 @@ public class Shooter2D : MonoBehaviour {
 		if (agent != null) {
 			turnSpeed = agent.angularSpeed;
 		}
-		var targetRotation = GetRotationToward (currentTarget);
-		transform.rotation = Quaternion.RotateTowards (transform.rotation, targetRotation, Time.deltaTime * turnSpeed);
+		var targetAngle = GetAngleToward (currentTarget);
+		var targetQ = GetRotationFromAngle(targetAngle);
+		transform.rotation = Quaternion.RotateTowards (transform.rotation, targetQ, Time.deltaTime * turnSpeed);
 	}
 
-	void ShootBullet (Vector3 dir) {
+	void ShootBullet(float angle) {
+		ShootBullet (new Vector2(Mathf.Cos(angle * Mathf.Deg2Rad), Mathf.Sin(angle * Mathf.Deg2Rad)));
+	}
+
+	void ShootBullet (Vector2 dir) {
 		// create a new bullet
-		var bullet = (Bullet)Instantiate (weapon.bulletPrefab, shootTransform.position, GetRotationFromDirection (dir));
+		var rotation = GetRotationFromAngle(GetAngleFromDirection (dir));
+		var go = PhotonNetwork.Instantiate (weapon.bulletPrefab.name, shootTransform.position, rotation, 0);
+		var bullet = go.GetComponent<Bullet> ();
 
 		// set bullet faction
 		FactionManager.SetFaction (bullet.gameObject, gameObject);
 
-		// make sure, we always shoot horizontally
-		dir.y = 0;
-
 		// set velocity
-		var rigidbody = bullet.GetComponent<Rigidbody> ();
+		var rigidbody = bullet.GetComponent<Rigidbody2D> ();
 		rigidbody.velocity = dir * bullet.speed;
 		bullet.damageMin = weapon.damageMin;
 		bullet.damageMax = weapon.damageMax;
+
+		if (weapon.ttl > 0) {
+			StartCoroutine (DestroyBullet (bullet.gameObject));
+		}
+	}
+
+	IEnumerator DestroyBullet(GameObject bullet) {
+		yield return new WaitForSeconds (weapon.ttl);
+		PhotonNetwork.Destroy (bullet);
 	}
 
 	void OnDeath (DamageInfo damageInfo) {

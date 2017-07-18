@@ -2,5 +2,5 @@
 using System.Collections;
 
 public class FactionMember : MonoBehaviour {
-	public FactionType FactionType;
+	public int FactionId;
 }

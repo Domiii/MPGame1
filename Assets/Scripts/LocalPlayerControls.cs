@@ -5,6 +5,7 @@ using UnityEngine;
 /// <summary>
 /// This component is only added to the local player!
 /// </summary>
+[RequireComponent(typeof(ClickToShoot2D))]
 public class LocalPlayerControls : MonoBehaviour {
 	public float speed = 5;
 

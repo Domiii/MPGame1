@@ -34,15 +34,15 @@ public class Unit : MonoBehaviour {
 	#endregion
 
 	#region Damage
-	public void Kill (FactionType sourceFactionType) {
+	public void Kill (int sourceFactionId) {
 		if (CanBeAttacked) {
 			// no health left after this!
-			Die (new DamageInfo { damage = health, sourceFactionType = sourceFactionType });
+			Die (new DamageInfo { damage = health, sourceFactionId = sourceFactionId });
 		}
 	}
 
-	public void Damage (float damagePoints, FactionType sourceFactionType) {
-		Damage (new DamageInfo { damage = damagePoints, sourceFactionType = sourceFactionType });
+	public void Damage (float damagePoints, int sourceFactionId) {
+		Damage (new DamageInfo { damage = damagePoints, sourceFactionId = sourceFactionId });
 	}
 
 	public void Damage (DamageInfo damageInfo) {

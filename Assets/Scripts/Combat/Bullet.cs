@@ -55,7 +55,7 @@ public class Bullet : MonoBehaviour {
 		// damage the unit!
 		//var damageInfo = ObjectManager.Instance.Obtain<DamageInfo> ();
 		var damage = Random.Range (damageMin, damageMax);
-		target.Damage (damage, FactionManager.GetFactionType(gameObject));
+		target.Damage (damage, FactionManager.GetFactionId(gameObject));
 		DestroyThis ();
 	}
 
