@@ -1,6 +1,6 @@
 ### TODO:
-* Shoot!
-* add player health, damage + death
+* add proper spawning
+* handle player death
 * add random pick-ups, to improve:
   * health
   * damage
@@ -12,3 +12,9 @@
 * create an interesting drop-rate function based on location?
 * leaderboard
 * Create player minimap markers + fix minimap!???
+
+
+## Done
+* Move around with WASD
+* Shoot!
+* add player health + damage
