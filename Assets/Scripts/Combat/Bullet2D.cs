@@ -1,10 +1,10 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class Bullet : MonoBehaviour {
+public class Bullet2D : MonoBehaviour {
 	//public GameObject owner;
 	public float speed = 10;
-	public float pushPower = 100;
+	//public float pushPower = 100;
 	public bool destroyOnCollision = false;
 	public float damageMin;
 	public float damageMax;
@@ -12,10 +12,10 @@ public class Bullet : MonoBehaviour {
 	bool isDestroyed = false;
 
 	void Start () {
-		Destroy (gameObject, 10);		// destroy after at most 10 seconds
+		StartCoroutine(DestroyThisLater (10));		// destroy after at most 10 seconds
 	}
 
-	void OnTriggerEnter (Collider col) {
+	void OnTriggerEnter2D (Collider2D col) {
 		if (isDestroyed) {
 			// do nothing
 			return;
@@ -35,14 +35,14 @@ public class Bullet : MonoBehaviour {
 			//				FactionManager.GetFactionType(gameObject), FactionManager.GetFactionType(col.gameObject),
 			//				gameObject.name, col.gameObject.name));
 
-			if (pushPower != 0) {
-				// push the other object!
-				var otherBody = col.gameObject.GetComponent<Rigidbody> ();
-				if (otherBody) {
-					var targetPos = col.ClosestPointOnBounds (transform.position);
-					otherBody.AddForceAtPosition (transform.forward * pushPower, targetPos, ForceMode.Impulse);
-				}
-			}
+//			if (pushPower != 0) {
+//				// push the other object!
+//				var otherBody = col.gameObject.GetComponent<Rigidbody> ();
+//				if (otherBody) {
+//					var targetPos = col.ClosestPointOnBounds (transform.position);
+//					otherBody.AddForceAtPosition (transform.forward * pushPower, targetPos, ForceMode.Impulse);
+//				}
+//			}
 
 			if (destroyOnCollision) {
 				// destroy on impact!
@@ -59,8 +59,15 @@ public class Bullet : MonoBehaviour {
 		DestroyThis ();
 	}
 
-	void DestroyThis () {
-		Destroy (gameObject);
-		isDestroyed = true;
+	public IEnumerator DestroyThisLater(float seconds) {
+		yield return new WaitForSeconds(seconds);
+		DestroyThis ();
+	}
+
+	public void DestroyThis () {
+		if (!isDestroyed) {
+			PhotonNetwork.Destroy (gameObject);
+			isDestroyed = true;
+		}
 	}
 }

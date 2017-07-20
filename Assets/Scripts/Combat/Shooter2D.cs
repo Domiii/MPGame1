@@ -41,7 +41,6 @@ public class Shooter2D : MonoBehaviour {
 		}
 
 		var angle = GetAngleToward(target);
-		print (angle);
 		if (weapon.bulletCount > 1) {
 			// shoot N bullets in a cone from -coneAngle/2 to +coneAngle/2
 			angle -= weapon.coneAngle/2;
@@ -134,7 +133,7 @@ public class Shooter2D : MonoBehaviour {
 		// create a new bullet
 		var rotation = GetRotationFromAngle(GetAngleFromDirection (dir));
 		var go = PhotonNetwork.Instantiate (weapon.bulletPrefab.name, shootTransform.position, rotation, 0);
-		var bullet = go.GetComponent<Bullet> ();
+		var bullet = go.GetComponent<Bullet2D> ();
 
 		// set bullet faction
 		FactionManager.SetFaction (bullet.gameObject, gameObject);
@@ -146,13 +145,8 @@ public class Shooter2D : MonoBehaviour {
 		bullet.damageMax = weapon.damageMax;
 
 		if (weapon.ttl > 0) {
-			StartCoroutine (DestroyBullet (bullet.gameObject));
+			StartCoroutine (bullet.DestroyThisLater(weapon.ttl));
 		}
-	}
-
-	IEnumerator DestroyBullet(GameObject bullet) {
-		yield return new WaitForSeconds (weapon.ttl);
-		PhotonNetwork.Destroy (bullet);
 	}
 
 	void OnDeath (DamageInfo damageInfo) {
