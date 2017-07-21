@@ -1,4 +1,8 @@
 ### TODO:
+* add room + spawn menu: let player pick name for player
+* store Character data using PlayerPrefs
+* show list of previous characters, allow player to choose
+* allow deleting of characters
 * add proper spawning
 * handle player death
 * add random pick-ups, to improve:
