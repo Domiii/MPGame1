@@ -1,7 +1,6 @@
 ### TODO:
 * add room + spawn menu: let player pick name for player
-* store Character data using PlayerPrefs
-* show list of previous characters, allow player to choose
+* store Character data using PlayerPrefs + allow loading previous character
 * allow deleting of characters
 * add proper spawning
 * handle player death
