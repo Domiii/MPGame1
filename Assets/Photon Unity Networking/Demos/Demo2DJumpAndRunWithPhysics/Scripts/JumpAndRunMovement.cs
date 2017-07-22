@@ -1,13 +1,14 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class JumpAndRunMovement : Photon.MonoBehaviour
+public class JumpAndRunMovement : MonoBehaviour
 {
     public float Speed;
     public float JumpForce;
 
     Animator m_Animator;
     Rigidbody2D m_Body;
+    PhotonView m_PhotonView;
 
     bool m_IsGrounded;
 
@@ -15,6 +16,7 @@ public class JumpAndRunMovement : Photon.MonoBehaviour
     {
         m_Animator = GetComponent<Animator>();
         m_Body = GetComponent<Rigidbody2D>();
+        m_PhotonView = GetComponent<PhotonView>();
     }
 
     void Update()
@@ -26,11 +28,13 @@ public class JumpAndRunMovement : Photon.MonoBehaviour
 
     void FixedUpdate()
     {
-		if( photonView.isMine )
-		{
-			UpdateMovement();
-			UpdateJumping();
+        if( m_PhotonView.isMine == false )
+        {
+            return;
         }
+
+        UpdateMovement();
+        UpdateJumping();
     }
 
     void UpdateFacingDirection()
@@ -49,10 +53,9 @@ public class JumpAndRunMovement : Photon.MonoBehaviour
     {
         if (Input.GetButton("Jump") && m_IsGrounded)
         {
-			m_Body.AddForce(Vector2.up * JumpForce);
-
-			m_Animator.SetTrigger("IsJumping");
-			photonView.RPC("DoJump", PhotonTargets.Others);
+            m_Animator.SetTrigger("IsJumping");
+            m_Body.AddForce(Vector2.up * JumpForce);
+            m_PhotonView.RPC("DoJump", PhotonTargets.Others);
         }
     }
 
@@ -80,14 +83,8 @@ public class JumpAndRunMovement : Photon.MonoBehaviour
             movementVelocity.x = 0;
         }
 
-		photonView.RPC("SetVelocity", PhotonTargets.All, movementVelocity);
+        m_Body.velocity = movementVelocity;
     }
-
-
-	[PunRPC]
-	void SetVelocity(Vector2 movementVelocity) {
-		m_Body.velocity = movementVelocity;
-	}
 
     void UpdateIsRunning()
     {
