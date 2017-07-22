@@ -1,6 +1,9 @@
 ### TODO:
-* Shoot!
-* add player health, damage + death
+* add room + spawn menu: let player pick name for player
+* store Character data using PlayerPrefs + allow loading previous character
+* allow deleting of characters
+* add proper spawning
+* handle player death
 * add random pick-ups, to improve:
   * health
   * damage
@@ -12,3 +15,9 @@
 * create an interesting drop-rate function based on location?
 * leaderboard
 * Create player minimap markers + fix minimap!???
+
+
+## Done
+* Move around with WASD
+* Shoot!
+* add player health + damage
